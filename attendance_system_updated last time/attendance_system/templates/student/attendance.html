@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}My Attendance{% endblock %}
+{% block content %}
+<h3 class="mb-1">My Attendance</h3>
+<p class="text-muted">Range: {{ range_label }} &mdash; Present: {{ present }} / {{ total }} &mdash; {{ pct }}%</p>
+
+<form method="GET" class="card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Period</label>
+      <select class="form-select form-select-sm" name="period" id="periodSelect" onchange="toggleCustomRange()">
+        {% for value, label in period_choices %}
+        <option value="{{ value }}" {% if selected_period == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 custom-range-field" style="{% if selected_period != 'custom' %}display:none{% endif %}">
+      <label class="form-label small mb-1">Start Date</label>
+      <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date }}">
+    </div>
+    <div class="col-md-3 custom-range-field" style="{% if selected_period != 'custom' %}display:none{% endif %}">
+      <label class="form-label small mb-1">End Date</label>
+      <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Subject</label>
+      <select class="form-select form-select-sm" name="subject_id">
+        <option value="">All Subjects</option>
+        {% for subj in class_subjects %}
+        <option value="{{ subj.id }}" {% if selected_subject == subj.id %}selected{% endif %}>{{ subj.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Apply</button></div>
+    <div class="col-md-2">
+      <a class="btn btn-outline-success btn-sm w-100" href="{{ url_for('student.export_attendance_csv', **request.args) }}">
+        <i class="bi bi-download"></i> Download CSV
+      </a>
+    </div>
+  </div>
+</form>
+
+<h5 class="mb-2">Subject-wise Attendance %</h5>
+<div class="card mb-4">
+  <table class="table mb-0">
+    <thead><tr><th>Subject</th><th>Present</th><th>Total Sessions</th><th>Attendance %</th></tr></thead>
+    <tbody>
+      {% for row in subject_summary %}
+      <tr>
+        <td>{{ row.label }}</td>
+        <td>{{ row.present }}</td>
+        <td>{{ row.total }}</td>
+        <td>
+          <span class="badge {% if row.pct >= 75 %}bg-success{% elif row.pct >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ row.pct }}%</span>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted py-4">No records for this range.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h5 class="mb-2">Detailed Log</h5>
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Date</th><th>Day</th><th>Time Marked</th><th>Subject</th><th>Status</th><th>Method</th></tr></thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>{{ r.date }}</td>
+        <td>{{ r.date.strftime('%A') }}</td>
+        <td>{{ r.marked_at.strftime('%H:%M') if r.marked_at else '-' }}</td>
+        <td>{{ r.subject.name }}</td>
+        <td>{% if r.status == 'Present' %}<span class="badge bg-success">Present</span>{% else %}<span class="badge bg-danger">Absent</span>{% endif %}</td>
+        <td>{{ 'Face + Geo' if r.method == 'face_geo' else 'Manual' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">No attendance records yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function toggleCustomRange() {
+  const show = document.getElementById('periodSelect').value === 'custom';
+  document.querySelectorAll('.custom-range-field').forEach(el => el.style.display = show ? '' : 'none');
+}
+</script>
+{% endblock %}

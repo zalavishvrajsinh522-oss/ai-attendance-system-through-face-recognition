@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Welcome, {{ student.name }}</h3>
+<div class="row g-3">
+  <div class="col-md-3 col-6"><div class="stat-card bg-grad-1"><small>Class</small><h2 style="font-size:1.4rem">{{ student.class_.name }}</h2></div></div>
+  <div class="col-md-3 col-6"><div class="stat-card bg-grad-2"><small>Attendance %</small><h2>{{ pct }}%</h2></div></div>
+  <div class="col-md-3 col-6"><div class="stat-card bg-grad-3"><small>Present</small><h2>{{ present }}</h2></div></div>
+  <div class="col-md-3 col-6"><div class="stat-card bg-grad-4"><small>Total Sessions</small><h2>{{ total }}</h2></div></div>
+</div>
+
+<div class="row mt-4 g-3">
+  <div class="col-md-3"><a href="{{ url_for('student.checkin') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-camera"></i> Check-in</a></div>
+  <div class="col-md-3"><a href="{{ url_for('student.attendance') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-list-check"></i> My Attendance</a></div>
+  <div class="col-md-3"><a href="{{ url_for('student.timetable') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-calendar-week"></i> Timetable</a></div>
+  <div class="col-md-3"><a href="{{ url_for('student.face_status') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-person-bounding-box"></i> Face Setup</a></div>
+</div>
+{% endblock %}

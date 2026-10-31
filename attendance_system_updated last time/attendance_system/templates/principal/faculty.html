@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Faculty{% endblock %}
+{% block content %}
+<h3 class="mb-4">Faculty</h3>
+<div class="card p-3 mb-4">
+  <form method="POST" class="row g-2">
+    <div class="col-md-3"><input class="form-control" name="name" placeholder="Full name" required></div>
+    <div class="col-md-2"><input class="form-control" name="username" placeholder="Username" required></div>
+    <div class="col-md-3"><input class="form-control" name="email" type="email" placeholder="Email" required></div>
+    <div class="col-md-2"><input class="form-control" name="password" type="text" placeholder="Password (required)" required minlength="6"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Assigned Subjects</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+      {% for f in faculty_list %}
+      <tr>
+        <td>{{ f.name }}</td>
+        <td>{{ f.user.username }}</td>
+        <td>{{ f.user.email }}</td>
+        <td>
+          {% for label in faculty_subjects.get(f.id, []) %}
+            <span class="badge bg-secondary">{{ label }}</span>
+          {% else %}<span class="text-muted">None (add via Timetable)</span>{% endfor %}
+        </td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editFaculty{{ f.id }}">
+            <i class="bi bi-pencil"></i> Edit
+          </button>
+          <form method="POST" action="{{ url_for('principal.delete_faculty', faculty_id=f.id) }}" class="d-inline" onsubmit="return confirm('Delete this faculty member?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Edit modal for this faculty member -->
+      <div class="modal fade" id="editFaculty{{ f.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('principal.edit_faculty', faculty_id=f.id) }}">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Faculty &mdash; {{ f.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Full Name</label>
+                  <input class="form-control" name="name" value="{{ f.name }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Username</label>
+                  <input class="form-control" name="username" value="{{ f.user.username }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Email</label>
+                  <input class="form-control" type="email" name="email" value="{{ f.user.email }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Reset Password</label>
+                  <input class="form-control" type="text" name="password" placeholder="Leave blank to keep current password" minlength="6">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="5" class="text-center text-muted py-4">No faculty yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

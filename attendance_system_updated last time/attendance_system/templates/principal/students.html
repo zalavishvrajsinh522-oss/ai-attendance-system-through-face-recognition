@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<h3 class="mb-4">Students</h3>
+<div class="card p-3 mb-4">
+  <form method="POST" class="row g-2">
+    <div class="col-md-2"><input class="form-control" name="name" placeholder="Full name" required></div>
+    <div class="col-md-2"><input class="form-control" name="enrollment_no" placeholder="Enrollment No." required></div>
+    <div class="col-md-2"><input class="form-control" name="username" placeholder="Username" required></div>
+    <div class="col-md-2"><input class="form-control" name="email" type="email" placeholder="Email" required></div>
+    <div class="col-md-2">
+      <select class="form-select" name="class_id" required>
+        <option value="">Class</option>
+        {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-1"><input class="form-control" name="password" placeholder="Pwd"></div>
+    <div class="col-md-1"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+  <p class="text-muted small mt-2 mb-0">Enrollment number is the student's unique identity -- used to search and download their attendance report.</p>
+</div>
+
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Name</th><th>Enrollment No.</th><th>Username</th><th>Email</th><th>Class</th><th>Face</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td>{{ s.enrollment_no or '-' }}</td>
+        <td>{{ s.user.username }}</td>
+        <td>{{ s.user.email }}</td>
+        <td>{{ s.class_.name }}</td>
+        <td>
+          {% if s.face_registered %}<span class="badge bg-success">Registered</span>
+          {% else %}<span class="badge bg-warning text-dark">Not set</span>{% endif %}
+        </td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editStudent{{ s.id }}">
+            <i class="bi bi-pencil"></i> Edit
+          </button>
+          <form method="POST" action="{{ url_for('principal.remove_student_face', student_id=s.id) }}" class="d-inline" onsubmit="return confirm('Remove face data?')">
+            <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-eraser"></i> Face</button>
+          </form>
+          <form method="POST" action="{{ url_for('principal.delete_student', student_id=s.id) }}" class="d-inline" onsubmit="return confirm('Delete this student?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Edit modal for this student -->
+      <div class="modal fade" id="editStudent{{ s.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('principal.edit_student', student_id=s.id) }}">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Student &mdash; {{ s.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Full Name</label>
+                  <input class="form-control" name="name" value="{{ s.name }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Enrollment No.</label>
+                  <input class="form-control" name="enrollment_no" value="{{ s.enrollment_no or '' }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Username</label>
+                  <input class="form-control" name="username" value="{{ s.user.username }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Email</label>
+                  <input class="form-control" type="email" name="email" value="{{ s.user.email }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Class</label>
+                  <select class="form-select" name="class_id">
+                    {% for c in classes %}<option value="{{ c.id }}" {% if c.id == s.class_id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Reset Password</label>
+                  <input class="form-control" type="text" name="password" placeholder="Leave blank to keep current password">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="7" class="text-center text-muted py-4">No students yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

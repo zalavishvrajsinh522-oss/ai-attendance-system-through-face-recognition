@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Holiday Management{% endblock %}
+{% block content %}
+<h3 class="mb-1">Holiday Management</h3>
+<p class="text-muted">Holidays are automatically excluded from working days and attendance % for everyone they apply to -- no one is marked absent on a holiday.</p>
+
+<div class="row g-3">
+  <!-- Add a custom holiday / vacation range / recurring weekly holiday -->
+  <div class="col-lg-6">
+    <div class="card p-3 h-100">
+      <h5>Add Holiday / Vacation</h5>
+      <form method="POST" action="{{ url_for('principal.holidays') }}">
+        <div class="mb-2">
+          <label class="form-label small mb-1">Name</label>
+          <input class="form-control" name="name" placeholder="e.g. Diwali, Summer Vacation, Sunday" required>
+        </div>
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="is_recurring" id="isRecurring" onchange="toggleRecurring()">
+          <label class="form-check-label" for="isRecurring">Recurring weekly holiday (e.g. every Sunday)</label>
+        </div>
+
+        <div id="recurringField" class="mb-2" style="display:none">
+          <label class="form-label small mb-1">Day of the week</label>
+          <select class="form-select" name="recurring_weekday">
+            {% for i in range(7) %}
+            <option value="{{ i }}" {% if weekday_names[i] == 'Sunday' %}selected{% endif %}>{{ weekday_names[i] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div id="dateFields" class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small mb-1">Start Date</label>
+            <input type="date" class="form-control" name="start_date">
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">End Date <span class="text-muted">(for a vacation range)</span></label>
+            <input type="date" class="form-control" name="end_date">
+          </div>
+        </div>
+        <p class="text-muted small">Leave End Date blank for a single-day holiday. For a festival whose date changes every year (e.g. a Gujarati festival), just add/edit it here each year -- your change is always preserved even if you later import a new calendar.</p>
+
+        <div class="mb-3">
+          <label class="form-label small mb-1">Applies To</label>
+          <select class="form-select" name="class_id">
+            <option value="">All Classes / Departments</option>
+            {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <button class="btn btn-primary w-100">Add Holiday</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Import annual calendar -->
+  <div class="col-lg-6">
+    <div class="card p-3 h-100">
+      <h5>Import Annual Calendar</h5>
+      <p class="text-muted small">Upload a CSV or Excel (.xlsx) file with columns: <code>name</code>, <code>start_date</code>, <code>end_date</code> (optional), <code>class</code> (optional -- leave blank for all classes). Dates can be <code>YYYY-MM-DD</code> or <code>DD-MM-YYYY</code>.</p>
+      <form method="POST" action="{{ url_for('principal.import_holidays') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+          <input type="file" class="form-control" name="calendar_file" accept=".csv,.xlsx" required>
+        </div>
+        <button class="btn btn-outline-primary w-100">Import Calendar</button>
+      </form>
+      <p class="text-muted small mt-2 mb-0">
+        <strong>Priority rule:</strong> importing never overwrites or duplicates a holiday you already added or edited by hand -- any exact duplicate (same name, dates and class) is skipped automatically.
+      </p>
+    </div>
+  </div>
+</div>
+
+<h5 class="mt-4 mb-2">All Holidays</h5>
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Name</th><th>Type</th><th>Dates</th><th>Applies To</th><th>Source</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+      {% for h in holidays %}
+      <tr>
+        <td>{{ h.name }}</td>
+        <td>
+          {% if h.recurring_weekday is not none %}
+            <span class="badge bg-info text-dark">Weekly: {{ weekday_names[h.recurring_weekday] }}</span>
+          {% elif h.start_date == h.end_date %}
+            <span class="badge bg-secondary">Single Day</span>
+          {% else %}
+            <span class="badge bg-secondary">Vacation Range</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if h.recurring_weekday is not none %}Every {{ weekday_names[h.recurring_weekday] }}
+          {% else %}{{ h.start_date }}{% if h.end_date and h.end_date != h.start_date %} to {{ h.end_date }}{% endif %}{% endif %}
+        </td>
+        <td>{{ h.class_.name if h.class_ else "All Classes" }}</td>
+        <td>{% if h.is_custom %}<span class="badge bg-success">Admin</span>{% else %}<span class="badge bg-light text-dark">Imported</span>{% endif %}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editHoliday{{ h.id }}">
+            <i class="bi bi-pencil"></i> Edit
+          </button>
+          <form method="POST" action="{{ url_for('principal.delete_holiday', holiday_id=h.id) }}" class="d-inline" onsubmit="return confirm('Delete this holiday?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <div class="modal fade" id="editHoliday{{ h.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('principal.edit_holiday', holiday_id=h.id) }}">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Holiday</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Name</label>
+                  <input class="form-control" name="name" value="{{ h.name }}">
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="is_recurring" id="rec{{ h.id }}" {% if h.recurring_weekday is not none %}checked{% endif %} onchange="toggleRecurringModal({{ h.id }})">
+                  <label class="form-check-label" for="rec{{ h.id }}">Recurring weekly holiday</label>
+                </div>
+                <div id="recField{{ h.id }}" class="mb-2" style="{% if h.recurring_weekday is none %}display:none{% endif %}">
+                  <label class="form-label small mb-1">Day of the week</label>
+                  <select class="form-select" name="recurring_weekday">
+                    {% for i in range(7) %}
+                    <option value="{{ i }}" {% if h.recurring_weekday == i %}selected{% endif %}>{{ weekday_names[i] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div id="dateField{{ h.id }}" class="row g-2 mb-2" style="{% if h.recurring_weekday is not none %}display:none{% endif %}">
+                  <div class="col-6">
+                    <label class="form-label small mb-1">Start Date</label>
+                    <input type="date" class="form-control" name="start_date" value="{{ h.start_date or '' }}">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small mb-1">End Date</label>
+                    <input type="date" class="form-control" name="end_date" value="{{ h.end_date or '' }}">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Applies To</label>
+                  <select class="form-select" name="class_id">
+                    <option value="">All Classes / Departments</option>
+                    {% for c in classes %}<option value="{{ c.id }}" {% if h.class_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">No holidays configured yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function toggleRecurring() {
+  const checked = document.getElementById('isRecurring').checked;
+  document.getElementById('recurringField').style.display = checked ? '' : 'none';
+  document.getElementById('dateFields').style.display = checked ? 'none' : '';
+}
+function toggleRecurringModal(id) {
+  const checked = document.getElementById('rec' + id).checked;
+  document.getElementById('recField' + id).style.display = checked ? '' : 'none';
+  document.getElementById('dateField' + id).style.display = checked ? 'none' : '';
+}
+</script>
+{% endblock %}

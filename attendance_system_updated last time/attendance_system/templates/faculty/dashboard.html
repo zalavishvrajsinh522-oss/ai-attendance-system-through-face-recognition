@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">My Assigned Classes &amp; Subjects</h3>
+<div class="row g-3">
+  {% for a in assignments %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>{{ a.subject_name }}</h5>
+      <p class="text-muted mb-3">Class: {{ a.class_name }}</p>
+      <a href="{{ url_for('faculty.mark_attendance', class_id=a.class_id, subject_id=a.subject_id) }}" class="btn btn-primary btn-sm mb-1">
+        <i class="bi bi-check2-square"></i> Mark Attendance
+      </a>
+      <a href="{{ url_for('faculty.history', class_id=a.class_id, subject_id=a.subject_id) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-clock-history"></i> History
+      </a>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-muted">No subjects assigned yet. Contact the Principal.</p>
+  {% endfor %}
+</div>
+{% endblock %}

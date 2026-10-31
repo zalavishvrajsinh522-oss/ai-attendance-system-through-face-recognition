@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Check-in{% endblock %}
+{% block content %}
+<h3 class="mb-1">Attendance Check-in</h3>
+<p class="text-muted">Face match + liveness + location + timetable are all validated before attendance is marked.</p>
+
+{% if not student.face_registered %}
+<div class="alert alert-warning">You haven't registered your face yet. <a href="{{ url_for('student.face_status') }}">Register now</a>.</div>
+{% endif %}
+
+{% if not active_entries %}
+<div class="alert alert-info">No class period is active right now for your class. Check back during your scheduled timetable slot.</div>
+{% else %}
+<div class="card p-3" style="max-width:520px">
+  <label class="form-label">Select active class period</label>
+  <select class="form-select mb-3" id="timetableSelect">
+    {% for e in active_entries %}
+    <option value="{{ e.id }}">{{ e.subject.name }} ({{ e.start_time.strftime('%H:%M') }} - {{ e.end_time.strftime('%H:%M') }})</option>
+    {% endfor %}
+  </select>
+
+  <video id="video" width="480" height="360" autoplay muted></video>
+  <canvas id="canvas" width="480" height="360" style="display:none"></canvas>
+
+  <button class="btn btn-primary mt-3" onclick="submitCheckin()"><i class="bi bi-check2-circle"></i> Mark My Attendance</button>
+  <div id="msg" class="mt-2"></div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  video.srcObject = stream;
+}).catch(() => {
+  document.getElementById('msg').innerHTML = '<div class="alert alert-danger">Camera access denied or unavailable.</div>';
+});
+
+function submitCheckin() {
+  const msg = document.getElementById('msg');
+  msg.innerHTML = '<div class="alert alert-info">Getting location...</div>';
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg', 0.85);
+    const timetableId = document.getElementById('timetableSelect').value;
+
+    msg.innerHTML = '<div class="alert alert-info">Verifying face and location...</div>';
+
+    fetch("{{ url_for('student.checkin_submit') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image: image,
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        timetable_id: timetableId
+      })
+    }).then(r => r.json()).then(data => {
+      msg.innerHTML = '<div class="alert alert-' + (data.ok ? 'success' : 'danger') + '">' + data.message + '</div>';
+    }).catch(() => {
+      msg.innerHTML = '<div class="alert alert-danger">Check-in failed. Try again.</div>';
+    });
+  }, function() {
+    msg.innerHTML = '<div class="alert alert-danger">Location access denied. Please allow location.</div>';
+  });
+}
+</script>
+{% endblock %}

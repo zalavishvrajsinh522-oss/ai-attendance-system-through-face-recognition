@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}My Timetable{% endblock %}
+{% block content %}
+<h3 class="mb-4">My Timetable</h3>
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Day</th><th>Subject</th><th>Faculty</th><th>Time</th></tr></thead>
+    <tbody>
+      {% for e in entries %}
+      <tr>
+        <td>{{ e.day }}</td>
+        <td>{{ e.subject.name }}</td>
+        <td>{{ e.faculty.name }}</td>
+        <td>{{ e.start_time.strftime('%H:%M') }} - {{ e.end_time.strftime('%H:%M') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted py-4">No timetable set for your class yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

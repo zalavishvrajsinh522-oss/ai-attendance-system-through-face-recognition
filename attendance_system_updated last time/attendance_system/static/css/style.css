@@ -1,0 +1,26 @@
+body {
+  background: #f4f6fb;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.app-navbar {
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+}
+.login-card {
+  margin-top: 8vh;
+  border-radius: 16px;
+}
+.card {
+  border-radius: 14px;
+}
+.stat-card {
+  border-radius: 14px;
+  padding: 1.25rem;
+  color: #fff;
+}
+.stat-card h2 { margin: 0; font-weight: 700; }
+.bg-grad-1 { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+.bg-grad-2 { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+.bg-grad-3 { background: linear-gradient(135deg, #10b981, #059669); }
+.bg-grad-4 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+#video, #canvas { border-radius: 12px; border: 2px solid #4f46e5; }
+table thead { background: #eef0fb; }

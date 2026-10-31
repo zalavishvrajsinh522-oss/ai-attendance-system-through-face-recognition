@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Face Registration{% endblock %}
+{% block content %}
+<h3 class="mb-1">Face Registration</h3>
+<p class="text-muted">
+  Status:
+  {% if student.face_registered %}<span class="badge bg-success">Registered</span>
+  {% else %}<span class="badge bg-warning text-dark">Not Registered</span>{% endif %}
+</p>
+
+<div class="card p-3" style="max-width:520px">
+  <video id="video" width="480" height="360" autoplay muted></video>
+  <canvas id="canvas" width="480" height="360" style="display:none"></canvas>
+  <div class="d-flex gap-2 mt-3">
+    <button class="btn btn-primary" id="captureBtn" onclick="capture()"><i class="bi bi-camera"></i> Capture Frame (<span id="count">0</span>/5)</button>
+    <button class="btn btn-success" id="saveBtn" onclick="saveFaces()" disabled><i class="bi bi-cloud-upload"></i> Save Face Data</button>
+  </div>
+  <div id="msg" class="mt-2"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let frames = [];
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  video.srcObject = stream;
+}).catch(() => {
+  document.getElementById('msg').innerHTML = '<div class="alert alert-danger">Camera access denied or unavailable.</div>';
+});
+
+function capture() {
+  if (frames.length >= 5) return;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  frames.push(canvas.toDataURL('image/jpeg', 0.8));
+  document.getElementById('count').innerText = frames.length;
+  if (frames.length >= 3) document.getElementById('saveBtn').disabled = false;
+}
+
+function saveFaces() {
+  document.getElementById('msg').innerHTML = '<div class="alert alert-info">Uploading & training...</div>';
+  fetch("{{ url_for('student.register_face') }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ frames: frames })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      document.getElementById('msg').innerHTML = '<div class="alert alert-success">Face registered successfully! (' + data.saved + ' frames saved)</div>';
+    } else {
+      document.getElementById('msg').innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+    }
+  }).catch(() => {
+    document.getElementById('msg').innerHTML = '<div class="alert alert-danger">Upload failed.</div>';
+  });
+}
+</script>
+{% endblock %}

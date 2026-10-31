@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<h3 class="mb-4">My Profile</h3>
+<div class="card p-4" style="max-width:500px">
+  <p><strong>Name:</strong> {{ student.name }}</p>
+  <p><strong>Username:</strong> {{ student.user.username }}</p>
+  <p><strong>Email:</strong> {{ student.user.email }}</p>
+  <p><strong>Class:</strong> {{ student.class_.name }}</p>
+  <p><strong>Face Status:</strong>
+    {% if student.face_registered %}<span class="badge bg-success">Registered</span>
+    {% else %}<span class="badge bg-warning text-dark">Not Registered</span>{% endif %}
+  </p>
+</div>
+{% endblock %}

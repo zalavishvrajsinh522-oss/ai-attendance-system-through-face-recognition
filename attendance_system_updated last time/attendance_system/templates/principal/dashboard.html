@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Principal Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Principal Dashboard</h3>
+<div class="row g-3">
+  <div class="col-md-2 col-6"><div class="stat-card bg-grad-1"><small>Classes</small><h2>{{ stats.classes }}</h2></div></div>
+  <div class="col-md-2 col-6"><div class="stat-card bg-grad-2"><small>Subjects</small><h2>{{ stats.subjects }}</h2></div></div>
+  <div class="col-md-2 col-6"><div class="stat-card bg-grad-3"><small>Faculty</small><h2>{{ stats.faculty }}</h2></div></div>
+  <div class="col-md-2 col-6"><div class="stat-card bg-grad-4"><small>Students</small><h2>{{ stats.students }}</h2></div></div>
+  <div class="col-md-3 col-12"><div class="stat-card bg-grad-1"><small>Attendance marked today</small><h2>{{ stats.attendance_today }}</h2></div></div>
+</div>
+
+<div class="row mt-4 g-3">
+  <div class="col-md-3"><a href="{{ url_for('principal.classes') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-collection"></i> Manage Classes</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.subjects') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-journal-code"></i> Manage Subjects</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.faculty') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-person-badge"></i> Manage Faculty</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.students') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-people"></i> Manage Students</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.timetable') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-calendar-week"></i> Timetable</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.locations') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-geo-alt"></i> Geofence Locations</a></div>
+  <div class="col-md-3"><a href="{{ url_for('principal.attendance_report') }}" class="btn btn-light w-100 shadow-sm py-3"><i class="bi bi-bar-chart"></i> Attendance Reports</a></div>
+</div>
+{% endblock %}

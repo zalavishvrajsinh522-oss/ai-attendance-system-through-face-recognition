@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Account{% endblock %}
+{% block content %}
+<h3 class="mb-4">My Account</h3>
+<div class="card p-4" style="max-width:480px">
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" name="email" value="{{ current_user.email }}" required>
+    </div>
+    <hr>
+    <p class="text-muted small">Leave the new password fields blank to keep your current password.</p>
+    <div class="mb-3">
+      <label class="form-label">New Password</label>
+      <input type="password" class="form-control" name="new_password" placeholder="Leave blank to keep current">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Confirm New Password</label>
+      <input type="password" class="form-control" name="confirm_password" placeholder="Repeat new password">
+    </div>
+    <hr>
+    <div class="mb-3">
+      <label class="form-label">Current Password <span class="text-danger">*</span></label>
+      <input type="password" class="form-control" name="current_password" required placeholder="Required to save any change">
+    </div>
+    <button class="btn btn-primary w-100"><i class="bi bi-save"></i> Save Changes</button>
+  </form>
+</div>
+{% endblock %}

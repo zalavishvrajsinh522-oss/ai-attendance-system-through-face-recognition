@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Geofence Locations{% endblock %}
+{% block content %}
+<h3 class="mb-4">Geofence / Class Locations</h3>
+<p class="text-muted">Set the classroom's GPS coordinates and allowed radius (meters) for student self check-in.</p>
+
+<div class="card p-3 mb-4">
+  <form method="POST" class="row g-2">
+    <div class="col-md-3">
+      <select class="form-select" name="class_id" required>
+        <option value="">Select Class</option>
+        {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3"><input class="form-control" name="latitude" type="number" step="any" placeholder="Latitude" required></div>
+    <div class="col-md-3"><input class="form-control" name="longitude" type="number" step="any" placeholder="Longitude" required></div>
+    <div class="col-md-2">
+      <select class="form-select" name="radius_meters" required>
+        {% for r in allowed_radii %}<option value="{{ r }}">{{ r }} m</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-1"><button class="btn btn-primary w-100">Save</button></div>
+  </form>
+  <button type="button" class="btn btn-sm btn-outline-secondary mt-2" style="width:220px" onclick="useMyLocation()">
+    <i class="bi bi-crosshair"></i> Use my current location
+  </button>
+</div>
+
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Class</th><th>Latitude</th><th>Longitude</th><th>Radius (m)</th></tr></thead>
+    <tbody>
+      {% for c in classes %}
+      <tr>
+        <td>{{ c.name }}</td>
+        {% if locations.get(c.id) %}
+        <td>{{ "%.6f"|format(locations[c.id].latitude) }}</td>
+        <td>{{ "%.6f"|format(locations[c.id].longitude) }}</td>
+        <td>{{ locations[c.id].radius_meters }}</td>
+        {% else %}
+        <td colspan="3" class="text-muted">Not set</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function useMyLocation() {
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    document.querySelector('input[name=latitude]').value = pos.coords.latitude;
+    document.querySelector('input[name=longitude]').value = pos.coords.longitude;
+  }, function() { alert('Could not get location. Please allow location access.'); });
+}
+</script>
+{% endblock %}

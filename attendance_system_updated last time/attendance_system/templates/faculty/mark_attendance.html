@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{% block content %}
+<h3 class="mb-1">Mark Attendance</h3>
+<p class="text-muted">{{ subject_obj.name }} &mdash; {{ class_obj.name }} &mdash; Today</p>
+
+<form method="POST">
+  <div class="card">
+    <table class="table mb-0">
+      <thead><tr><th>Student</th><th>Present</th><th>Absent</th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td><input type="radio" name="status_{{ s.id }}" value="Present" {% if existing_map.get(s.id, 'Present') == 'Present' %}checked{% endif %}></td>
+          <td><input type="radio" name="status_{{ s.id }}" value="Absent" {% if existing_map.get(s.id) == 'Absent' %}checked{% endif %}></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-center text-muted py-4">No students in this class.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <button class="btn btn-primary mt-3"><i class="bi bi-save"></i> Save Attendance</button>
+</form>
+{% endblock %}

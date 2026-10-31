@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Subjects{% endblock %}
+{% block content %}
+<h3 class="mb-4">Subjects</h3>
+<div class="card p-3 mb-4">
+  <form method="POST" class="row g-2">
+    <div class="col-md-5"><input class="form-control" name="name" placeholder="Subject name e.g. Python" required></div>
+    <div class="col-md-5">
+      <select class="form-select" name="class_id" required>
+        <option value="">Select Class</option>
+        {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <table class="table mb-0">
+    <thead><tr><th>Subject</th><th>Class</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+      {% for s in subjects %}
+      <tr>
+        <td>
+          <form method="POST" action="{{ url_for('principal.edit_subject', subject_id=s.id) }}" class="d-flex gap-2">
+            <input class="form-control form-control-sm" name="name" value="{{ s.name }}">
+            <select class="form-select form-select-sm" name="class_id">
+              {% for c in classes %}<option value="{{ c.id }}" {% if c.id == s.class_id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-sm btn-outline-primary">Save</button>
+          </form>
+        </td>
+        <td>{{ s.class_.name }}</td>
+        <td class="text-end">
+          <form method="POST" action="{{ url_for('principal.delete_subject', subject_id=s.id) }}" onsubmit="return confirm('Delete this subject?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="text-center text-muted py-4">No subjects yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
